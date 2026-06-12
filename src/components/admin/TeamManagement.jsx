@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
-import BASE_API from '../../config';
+const BASE_API = import.meta.env.VITE_BASE_API;
 
 export default function TeamManagement() {
   const [agents, setAgents] = useState([]);

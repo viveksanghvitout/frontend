@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { BASE_API } from '../../config';
+const BASE_API = import.meta.env.VITE_BASE_API || "http://bot.a4tool.com";
 import useTheme from '../../hooks/useTheme';
 
 const AdminLogin = () => {

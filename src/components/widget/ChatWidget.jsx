@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import BASE_API from '../../config';
+const BASE_API = import.meta.env.VITE_BASE_API;
 
 export default function ChatWidget() {
   const [searchParams] = useSearchParams();

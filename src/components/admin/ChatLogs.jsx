@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'react-toastify';
-import BASE_API from '../../config';
+const BASE_API = import.meta.env.VITE_BASE_API;
 
 export default function ChatLogs() {
   const [sessions, setSessions] = useState([]);
