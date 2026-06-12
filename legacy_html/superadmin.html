@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SaaS Platform | Super Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./config-file" defer></script>
+</head>
+<body class="bg-slate-900 text-slate-200 h-screen font-sans">
+
+    <div id="login-screen" class="flex h-screen items-center justify-center bg-slate-950">
+        <div class="bg-slate-900 p-8 rounded-xl shadow-2xl border border-slate-800 w-96 relative">
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-bold text-white">System Administration</h2>
+                <p class="text-sm text-slate-400 mt-1">Super Admin Access Only</p>
+            </div>
+            
+            <form id="sa-step-1" onsubmit="requestSuperAdminOTP(event)" class="space-y-5">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Master Email</label>
+                    <input type="email" id="sa-email" required class="w-full p-3 bg-slate-800 border border-slate-700 rounded-lg text-white outline-none focus:border-indigo-500 transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Password</label>
+                    <input type="password" id="sa-password" required class="w-full p-3 bg-slate-800 border border-slate-700 rounded-lg text-white outline-none focus:border-indigo-500 transition">
+                </div>
+                <button type="submit" id="sa-login-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg shadow-lg transition">Authenticate</button>
+            </form>
+
+            <form id="sa-step-2" onsubmit="verifySuperAdminOTP(event)" class="space-y-5 hidden">
+                <div>
+                    <label class="block text-xs font-bold text-emerald-500 uppercase tracking-wide mb-1 text-center">Enter 6-Digit OTP</label>
+                    <input type="text" id="sa-otp" required placeholder="123456" class="w-full p-3 bg-slate-800 border border-emerald-500/50 rounded-lg text-white text-center font-mono text-2xl tracking-widest outline-none focus:border-emerald-500 transition">
+                </div>
+                <button type="submit" id="sa-verify-btn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg shadow-lg transition">Verify & Login</button>
+                <div class="text-center">
+                    <button type="button" onclick="cancelSuperAdminLogin()" class="text-xs text-slate-500 hover:text-white transition">← Back to Password</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+    <div id="dashboard-screen" class="hidden h-screen flex">
+        
+        <aside class="w-64 bg-slate-950 border-r border-slate-800 flex flex-col">
+            <div class="p-6 border-b border-slate-800">
+                <h1 class="text-xl font-bold text-indigo-400">Administration Portal</h1>
+                <p id="admin-name-display" class="text-xs text-slate-500 mt-1">Master Control Portal</p>
+            </div>
+            <nav class="p-4 space-y-2 flex-1">
+                <button onclick="showClientsView()" id="nav-clients" class="w-full text-left p-3 rounded-lg bg-indigo-900/40 text-indigo-300 font-medium transition border border-indigo-500/20 shadow-inner">🏢 Manage Clients</button>
+                <button onclick="showSettingsView()" id="nav-settings" class="w-full text-left p-3 rounded-lg hover:bg-slate-800/50 text-slate-400 hover:text-indigo-300 font-medium transition">⚙️ Global Settings</button>
+                <button onclick="showDeletedView()" id="nav-deleted" class="w-full text-left p-3 rounded-lg hover:bg-slate-800/50 text-slate-400 hover:text-indigo-300 font-medium transition">🗑️ Deleted Accounts</button>
+            </nav>
+            <div class="p-4 border-t border-slate-800">
+                <button onclick="logoutSuperAdmin()" class="w-full text-left p-3 rounded-lg text-red-400 hover:bg-red-950 transition font-medium">🚪 Secure Logout</button>
+            </div>
+        </aside>
+
+        <main class="flex-1 p-8 overflow-y-auto bg-slate-900 relative">
+    
+            <div id="view-clients">
+                <div class="flex justify-between items-end mb-8 pb-4 border-b border-slate-800/50">
+                    <div>
+                        <h2 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400 tracking-tight">Active Workspaces</h2>
+                        <p class="text-sm text-slate-400 font-medium mt-1">Manage billing, API access, and platform suspensions.</p>
+                    </div>
+                    
+                    <button onclick="openModal()" class="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white px-6 py-2.5 rounded-lg font-bold shadow-lg shadow-indigo-500/25 transition-all transform hover:-translate-y-0.5 border border-indigo-400/20">
+                        + Onboard New Client
+                    </button>
+                </div>
+
+                <div class="bg-slate-950 rounded-xl border border-slate-800 overflow-hidden shadow-xl">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-900 border-b border-slate-800 text-slate-400 text-xs uppercase tracking-wider">
+                                <th class="p-4 font-bold">Business Name</th>
+                                <th class="p-4 font-bold">Plan</th>
+                                <th class="p-4 font-bold">Workspace API Key</th>
+                                <th class="p-4 font-bold">Status</th>
+                                <th class="p-4 font-bold text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="clients-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="view-deleted" class="hidden">
+                <div class="flex justify-between items-end mb-8 pb-4 border-b border-slate-800/50">
+                    <div>
+                        <h2 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-orange-400 tracking-tight">Deleted Accounts Archive</h2>
+                        <p class="text-sm text-slate-400 font-medium mt-1">Review historical records or fully recover past accounts back to active state.</p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-950 rounded-xl border border-slate-800 overflow-hidden shadow-xl">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-900 border-b border-slate-800 text-slate-400 text-xs uppercase tracking-wider">
+                                <th class="p-4 font-bold">Business Name</th>
+                                <th class="p-4 font-bold">Plan</th>
+                                <th class="p-4 font-bold">Workspace API Key</th>
+                                <th class="p-4 font-bold text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="deleted-clients-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="view-settings" class="hidden max-w-2xl">
+                <h2 class="text-2xl font-bold text-white mb-8">Global AI Settings</h2>
+                
+                <div class="bg-slate-950 p-6 rounded-xl border border-slate-800 shadow-xl">
+                    <h3 class="text-lg font-semibold text-white mb-4">Master Keys</h3>
+                    <p class="text-sm text-slate-400 mb-6">If a client does not provide their own API key, the platform will fall back to using this master key to generate their chatbot responses.</p>
+                    
+                    <form onsubmit="saveSettings(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Gemini API Key (Global)</label>
+                            <input type="password" id="setting-openai" placeholder="sk-..." class="w-full p-3 bg-slate-900 border border-slate-700 rounded-lg text-white outline-none focus:border-indigo-500 transition">
+                        </div>
+                        <hr class="border-slate-800 my-6">
+                        
+                        <div>
+                            <h3 class="text-lg font-semibold text-white mb-4">Email Notifications (SMTP)</h3>
+                            <p class="text-sm text-slate-400 mb-4">Configure the master email account used to send platform alerts and welcome emails to clients.</p>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="md:col-span-2">
+                                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">SMTP Server (Host:Port)</label>
+                                    <input type="text" id="setting-smtp-server" placeholder="e.g., smtp.gmail.com:587" class="w-full p-3 bg-slate-900 border border-slate-700 rounded-lg text-white outline-none focus:border-indigo-500 transition">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Sender Email</label>
+                                    <input type="email" id="setting-smtp-email" placeholder="notifications@myplatform.com" class="w-full p-3 bg-slate-900 border border-slate-700 rounded-lg text-white outline-none focus:border-indigo-500 transition">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">SMTP Password</label>
+                                    <div class="relative">
+                                        <input type="password" id="setting-smtp-password" placeholder="••••••••" class="w-full p-3 bg-slate-900 border border-slate-700 rounded-lg text-white outline-none focus:border-indigo-500 transition pr-12">
+                                        <button type="button" onclick="togglePasswordVisibility('setting-smtp-password')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-white transition">
+                                            <svg id="eye-icon-setting-smtp-password" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                              <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                                              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" id="btn-save-settings" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-6 rounded-lg shadow transition mt-4">Save Configuration</button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="new-client-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                <div class="bg-slate-900 border border-slate-700 rounded-xl p-6 w-full max-w-lg shadow-2xl relative">
+                    <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white transition">✖</button>
+                    <h2 class="text-2xl font-bold text-white mb-6">Onboard New Client</h2>
+                    <form id="new-client-form" onsubmit="submitNewClient(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-1">Company Name *</label>
+                            <input type="text" id="nc-name" required class="w-full p-2 bg-slate-950 border border-slate-700 rounded text-white">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="block text-xs font-bold text-slate-400 mb-1">Admin Email *</label><input type="email" id="nc-email" required class="w-full p-2 bg-slate-950 border border-slate-700 rounded text-white"></div>
+                            <div><label class="block text-xs font-bold text-slate-400 mb-1">Phone Number *</label><input type="tel" id="nc-phone" required class="w-full p-2 bg-slate-950 border border-slate-700 rounded text-white"></div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-1">Website URL</label>
+                            <input type="text" id="nc-website" class="w-full p-2 bg-slate-950 border border-slate-700 rounded text-white">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="block text-xs font-bold text-slate-400 mb-1">Industry</label><input type="text" id="nc-industry" class="w-full p-2 bg-slate-950 border border-slate-700 rounded text-white"></div>
+                            <div><label class="block text-xs font-bold text-slate-400 mb-1">Plan Tier</label>
+                                <select id="nc-plan" class="w-full p-2 bg-slate-950 border border-slate-700 rounded text-white outline-none">
+                                    <option value="Basic">Basic</option>
+                                    <option value="Pro">Pro</option>
+                                    <option value="Enterprise">Enterprise</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" id="btn-create-client" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded mt-4 transition">Generate API Key & Save</button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="client-detail-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                <div class="bg-slate-900 border border-slate-700 rounded-xl p-6 w-full max-w-4xl shadow-2xl relative max-h-[90vh] overflow-y-auto">
+                    <button onclick="document.getElementById('client-detail-modal').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-white transition">✖</button>
+                    <div class="mb-6 border-b border-slate-800 pb-4">
+                        <h2 class="text-3xl font-bold text-white flex items-center gap-3">
+                            <span id="cd-name">Company Name</span>
+                            <span id="cd-status" class="text-xs px-2 py-1 rounded-full bg-emerald-900/50 text-emerald-400 border border-emerald-800">Active</span>
+                        </h2>
+                        <p class="text-slate-400 text-sm mt-1">API Key: <code id="cd-apikey" class="bg-slate-950 px-2 py-1 rounded border border-slate-800 text-indigo-400 select-all">sk_live_...</code></p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-slate-950 border border-slate-800 rounded-lg p-5">
+                            <h3 class="text-slate-300 font-semibold mb-4 text-sm uppercase tracking-wider">Business Details</h3>
+                            <ul class="space-y-3 text-sm text-slate-400">
+                                <li><strong class="text-slate-500">Email:</strong> <span id="cd-email">...</span></li>
+                                <li><strong class="text-slate-500">Phone:</strong> <span id="cd-phone">...</span></li>
+                                <li><strong class="text-slate-500">Website:</strong> <span id="cd-website">...</span></li>
+                                <li><strong class="text-slate-500">Industry:</strong> <span id="cd-industry">...</span></li>
+                                <li class="pt-3 border-t border-slate-800"><strong class="text-slate-500">Plan:</strong> <span id="cd-plan" class="text-indigo-400 font-bold">...</span></li>
+                                <li><strong class="text-slate-500">Joined:</strong> <span id="cd-joined">...</span></li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-slate-950 border border-slate-800 rounded-lg p-5">
+                            <h3 class="text-slate-300 font-semibold mb-4 text-sm uppercase tracking-wider">Bot Configuration</h3>
+                            <ul class="space-y-3 text-sm text-slate-400">
+                                <li><strong class="text-slate-500">Bot Name:</strong> <span id="cd-bot-name">...</span></li>
+                                <li><strong class="text-slate-500">Support Email:</strong> <span id="cd-bot-email">...</span></li>
+                                <li><strong class="text-slate-500">Support Phone:</strong> <span id="cd-bot-phone">...</span></li>
+                            </ul>
+                            <div class="mt-4">
+                                <strong class="text-slate-500 text-sm block mb-1">Custom Bot Rules:</strong>
+                                <div id="cd-rules" class="bg-slate-900 p-2 rounded border border-slate-800 text-xs h-24 overflow-y-auto">No custom rules set.</div>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-950 border border-slate-800 rounded-lg p-5">
+                            <h3 class="text-slate-300 font-semibold mb-4 text-sm uppercase tracking-wider">Platform Usage</h3>
+                            <div class="space-y-4">
+                                <div class="bg-indigo-900/20 border border-indigo-800/50 p-4 rounded-lg text-center">
+                                    <span class="block text-3xl font-bold text-indigo-400" id="cd-stat-agents">0</span>
+                                    <span class="text-xs text-indigo-300 uppercase font-semibold">Human Agents</span>
+                                </div>
+                                <div class="bg-emerald-900/20 border border-emerald-800/50 p-4 rounded-lg text-center">
+                                    <span class="block text-3xl font-bold text-emerald-400" id="cd-stat-sessions">0</span>
+                                    <span class="text-xs text-emerald-300 uppercase font-semibold">Total Chat Sessions</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        let API_BASE = "";
+        let TEMP_SA_EMAIL = ""; // Stores the email during the OTP transition
+        
+        window.onload = () => {
+            if (typeof CONFIG !== "undefined") {
+                API_BASE = CONFIG.BASE_API;
+            } else {
+                console.error("Configuration file missing or failed to initialize.");
+            }
+
+            const token = localStorage.getItem("sa_token");
+            if (token) showDashboard();
+        };
+
+        // =======================================
+        // SUPER ADMIN OTP LOGIN
+        // =======================================
+        async function requestSuperAdminOTP(e) {
+            e.preventDefault();
+            const btn = document.getElementById('sa-login-btn');
+            
+            const email = document.getElementById('sa-email').value;
+            const password = document.getElementById('sa-password').value;
+
+            if (!email || !password) {
+                alert("Please enter both email and password.");
+                return;
+            }
+
+            try {
+                btn.innerText = "Verifying credentials...";
+                btn.disabled = true;
+
+                const loginResponse = await fetch(`${API_BASE}/superadmin/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const loginData = await loginResponse.json();
+                
+                if (!loginResponse.ok || loginData.status !== "success") {
+                    alert(loginData.message || "Invalid email or password");
+                    btn.innerText = "Authenticate";
+                    btn.disabled = false;
+                    return; 
+                }
+
+                btn.innerText = "Sending OTP...";
+                
+                const otpResponse = await fetch(`${API_BASE}/superadmin/auth/send-otp`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password }) 
+                });
+                const otpData = await otpResponse.json();
+                
+                if (otpResponse.ok && otpData.status === "success") {
+                    TEMP_SA_EMAIL = email;
+                    document.getElementById('sa-step-1').classList.add('hidden');
+                    document.getElementById('sa-step-2').classList.remove('hidden');
+                    document.getElementById('sa-otp').focus();
+                } else {
+                    alert(otpData.message || "Failed to send OTP. Please try again.");
+                }
+
+            } catch (err) {
+                console.error("Authentication Error:", err);
+                alert("Server connection failed.");
+            } finally {
+                btn.innerText = "Authenticate";
+                btn.disabled = false;
+            }
+        }
+
+        async function verifySuperAdminOTP(e) {
+            e.preventDefault();
+            const btn = document.getElementById('sa-verify-btn');
+            btn.innerText = "Accessing...";
+            
+            const otp = document.getElementById('sa-otp').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/superadmin/auth/verify-otp`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: TEMP_SA_EMAIL, otp_code: otp })
+                });
+                const data = await response.json();
+                
+                if (response.ok && data.status === "success") {
+                    localStorage.setItem("sa_token", data.access_token);
+                    document.getElementById('admin-name-display').innerText = data.name || "Super Admin";
+                    showDashboard();
+                } else {
+                    alert(data.message || "Invalid OTP Code");
+                }
+            } catch (err) {
+                alert("Server connection failed.");
+            } finally {
+                btn.innerText = "Verify & Login";
+            }
+        }
+
+        function cancelSuperAdminLogin() {
+            TEMP_SA_EMAIL = "";
+            document.getElementById('sa-otp').value = "";
+            document.getElementById('sa-step-2').classList.add('hidden');
+            document.getElementById('sa-step-1').classList.remove('hidden');
+        }
+
+        // =======================================
+        // STANDARD ADMIN FUNCTIONS
+        // =======================================
+        function showDashboard() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('dashboard-screen').classList.remove('hidden');
+            loadClients(); 
+        }
+
+        function logoutSuperAdmin() {
+            localStorage.removeItem("sa_token");
+            window.location.reload();
+        }
+
+        async function loadClients() {
+            const tbody = document.getElementById('clients-table-body');
+            const token = localStorage.getItem("sa_token");
+            if (!token) return logoutSuperAdmin(); 
+
+            try {
+                const res = await fetch(`${API_BASE}/superadmin/clients`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const data = await res.json();
+                
+                if (res.ok && data.status === "success") {
+                    if (data.clients.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500 italic">No businesses onboarded yet.</td></tr>`;
+                        return;
+                    }
+                    
+                    let html = '';
+                    data.clients.forEach(c => {
+                        html += `
+                        <tr class="border-b border-slate-800 hover:bg-slate-800/30 transition">
+                            <td class="p-4"><p class="font-bold text-white">${c.company_name}</p><p class="text-xs text-slate-500">${c.website || 'No website'} &bull; ${c.industry || 'N/A'}</p></td>
+                            <td class="p-4 text-sm text-slate-300">${c.subscription_plan}</td>
+                            <td class="p-4"><code class="text-xs bg-slate-950 px-2 py-1 rounded text-slate-400 border border-slate-800">${c.api_key}</code></td>
+                            <td class="p-4"><span class="text-xs px-2 py-1 rounded-full ${c.is_active ? 'bg-emerald-900/50 text-emerald-400 border border-emerald-800' : 'bg-red-900/50 text-red-400 border border-red-800'}">${c.is_active ? 'Active' : 'Suspended'}</span></td>
+                            <td class="p-4 flex gap-2 justify-end">
+                                <button onclick="openClientDetails(${c.id})" class="text-xs bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded transition">View</button>
+                                <button onclick="toggleClientStatus(${c.id})" class="text-xs bg-transparent border border-slate-700 hover:bg-slate-800 text-slate-300 px-3 py-1.5 rounded transition">${c.is_active ? 'Suspend' : 'Activate'}</button>
+                                <button onclick="deleteClientWorkspace(${c.id})" class="text-xs bg-red-950 border border-red-800/50 hover:bg-red-900 text-red-200 px-3 py-1.5 rounded transition">Delete</button>
+                            </td>
+                        </tr>`;
+                    });
+                    tbody.innerHTML = html;
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-500">Session expired. Please log in again.</td></tr>`;
+                    setTimeout(logoutSuperAdmin, 2000);
+                }
+            } catch (err) { tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-500">Network error fetching clients.</td></tr>`; }
+        }
+
+        // --- NEW: Added the missing loadDeletedClients function implementation ---
+        async function loadDeletedClients() {
+            const tbody = document.getElementById('deleted-clients-table-body');
+            const token = localStorage.getItem("sa_token");
+            if (!token) return logoutSuperAdmin();
+
+            try {
+                const res = await fetch(`${API_BASE}/superadmin/clients?deleted=true`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const data = await res.json();
+
+                if (res.ok && data.status === "success") {
+                    if (!data.clients || data.clients.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-500 italic">No deleted accounts found in the archive history.</td></tr>`;
+                        return;
+                    }
+
+                    let html = '';
+                    data.clients.forEach(c => {
+                        html += `
+                        <tr class="border-b border-slate-800 hover:bg-slate-800/30 transition">
+                            <td class="p-4"><p class="font-bold text-slate-400">${c.company_name}</p><p class="text-xs text-slate-600">${c.website || 'No website'} &bull; ${c.industry || 'N/A'}</p></td>
+                            <td class="p-4 text-sm text-slate-500">${c.subscription_plan}</td>
+                            <td class="p-4"><code class="text-xs bg-slate-950 px-2 py-1 rounded text-slate-600 border border-slate-900/60 select-all">${c.api_key}</code></td>
+                            <td class="p-4 flex gap-2 justify-end">
+                                <button onclick="openClientDetails(${c.id})" class="text-xs bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded transition">View</button>
+                                <button onclick="recoverClientWorkspace(${c.id})" class="text-xs bg-emerald-950 border border-emerald-800/60 hover:bg-emerald-900 text-emerald-300 px-4 py-1.5 rounded font-bold transition">Recover Account</button>
+                            </td>
+                        </tr>`;
+                    });
+                    tbody.innerHTML = html;
+                }
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-red-500">Failed to load archive log history.</td></tr>`;
+            }
+        }
+
+        async function toggleClientStatus(clientId) {
+            if(!confirm("Are you sure you want to change this business's platform access?")) return;
+            const token = localStorage.getItem("sa_token");
+            try {
+                const res = await fetch(`${API_BASE}/superadmin/clients/${clientId}/toggle`, { method: 'PUT', headers: { 'Authorization': `Bearer ${token}` } });
+                if(res.ok) loadClients(); else alert("Failed to update status.");
+            } catch (err) { alert("Server connection failed."); }
+        }
+
+        async function deleteClientWorkspace(clientId) {
+            if (!confirm("⚠️ DANGER: Are you sure you want to delete this business client? This moves them into the Deleted Accounts archive.")) return;
+            const token = localStorage.getItem("sa_token");
+            try {
+                const res = await fetch(`${API_BASE}/superadmin/clients/${clientId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                const data = await res.json();
+                if (res.ok && data.status === "success") loadClients();
+            } catch (err) { alert("Server network execution failure."); }
+        }
+
+        async function recoverClientWorkspace(clientId) {
+            if (!confirm("Are you sure you want to restore this workspace account back to the active list?")) return;
+            const token = localStorage.getItem("sa_token");
+            try {
+                const res = await fetch(`${API_BASE}/superadmin/clients/${clientId}/recover`, { method: 'PUT', headers: { 'Authorization': `Bearer ${token}` } });
+                const data = await res.json();
+                if (res.ok && data.status === "success") loadDeletedClients();
+            } catch (err) { alert("Server network execution failure."); }
+        }
+        
+        function showClientsView() {
+            document.getElementById('view-clients').classList.remove('hidden');
+            document.getElementById('view-deleted').classList.add('hidden'); // Fixed typo assignment bug
+            document.getElementById('view-settings').classList.add('hidden');
+            
+            document.getElementById('nav-clients').className = "w-full text-left p-3 rounded-lg bg-indigo-900/50 text-indigo-300 font-medium transition border border-indigo-500/20 shadow-inner";
+            document.getElementById('nav-deleted').className = "w-full text-left p-3 rounded-lg hover:bg-slate-800/50 text-slate-400 hover:text-indigo-300 font-medium transition";
+            document.getElementById('nav-settings').className = "w-full text-left p-3 rounded-lg hover:bg-slate-800 text-slate-400 font-medium transition";
+            loadClients();
+        }
+
+        function showDeletedView() {
+            document.getElementById('view-deleted').classList.remove('hidden');
+            document.getElementById('view-clients').classList.add('hidden');
+            document.getElementById('view-settings').classList.add('hidden');
+            
+            document.getElementById('nav-deleted').className = "w-full text-left p-3 rounded-lg bg-indigo-900/50 text-indigo-300 font-medium transition border border-indigo-500/20 shadow-inner";
+            document.getElementById('nav-clients').className = "w-full text-left p-3 rounded-lg hover:bg-slate-800/50 text-slate-400 hover:text-indigo-300 font-medium transition";
+            document.getElementById('nav-settings').className = "w-full text-left p-3 rounded-lg hover:bg-slate-800 text-slate-400 font-medium transition";
+            loadDeletedClients();
+        }
+
+        function showSettingsView() {
+            document.getElementById('view-settings').classList.remove('hidden');
+            document.getElementById('view-clients').classList.add('hidden');
+            document.getElementById('view-deleted').classList.add('hidden');
+            
+            document.getElementById('nav-settings').className = "w-full text-left p-3 rounded-lg bg-indigo-900/50 text-indigo-300 font-medium transition border border-indigo-500/20 shadow-inner";
+            document.getElementById('nav-clients').className = "w-full text-left p-3 rounded-lg hover:bg-slate-800/50 text-slate-400 hover:text-indigo-300 font-medium transition";
+            document.getElementById('nav-deleted').className = "w-full text-left p-3 rounded-lg hover:bg-slate-800/50 text-slate-400 hover:text-indigo-300 font-medium transition";
+            loadSettings(); 
+        }
+
+        function openModal() { document.getElementById('new-client-modal').classList.remove('hidden'); }
+        function closeModal() { document.getElementById('new-client-modal').classList.add('hidden'); }
+
+        async function submitNewClient(e) {
+            e.preventDefault();
+            const phoneInput = document.getElementById('nc-phone').value.trim();
+            const cleanPhone = phoneInput.replace(/[\s-]/g, '');
+            const phoneRegex = /^\+?[0-9]{8,15}$/;
+            
+            if (!phoneRegex.test(cleanPhone)) {
+                alert("Please enter a valid mobile number (between 8 and 15 digits).");
+                return;
+            }
+
+            const btn = document.getElementById('btn-create-client');
+            btn.innerText = "Creating...";
+            
+            const payload = {
+                company_name: document.getElementById('nc-name').value,
+                email: document.getElementById('nc-email').value,  
+                phone: document.getElementById('nc-phone').value,  
+                website: document.getElementById('nc-website').value,
+                industry: document.getElementById('nc-industry').value,
+                subscription_plan: document.getElementById('nc-plan').value
+            };
+
+            try {
+                const token = localStorage.getItem("sa_token");
+                const res = await fetch(`${API_BASE}/superadmin/clients`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(payload) });
+                const data = await res.json();
+                if(res.ok && data.status === "success") {
+                    closeModal(); document.getElementById('new-client-form').reset(); loadClients(); 
+                } else { alert(data.message || "Failed to create client."); }
+            } catch (err) { alert("Server error."); } finally { btn.innerText = "Generate API Key & Save"; }
+        }
+
+        async function loadSettings() {
+            const token = localStorage.getItem("sa_token");
+            try {
+                const res = await fetch(`${API_BASE}/superadmin/settings`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const data = await res.json();
+                if(res.ok && data.settings) {
+                    document.getElementById('setting-openai').value = data.settings.master_gemini_key || "";
+                    document.getElementById('setting-smtp-server').value = data.settings.smtp_server || "";
+                    document.getElementById('setting-smtp-email').value = data.settings.smtp_email || "";
+                    document.getElementById('setting-smtp-password').value = data.settings.smtp_password || "";
+                }
+            } catch (err) { console.error("Could not load settings"); }
+        }
+
+        function togglePasswordVisibility(inputId) {
+            const input = document.getElementById(inputId);
+            input.type = input.type === "password" ? "text" : "password";
+        }
+
+        async function saveSettings(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-save-settings');
+            btn.innerText = "Saving...";
+            const token = localStorage.getItem("sa_token");
+        
+            const payload = { 
+                master_gemini_key: document.getElementById('setting-openai').value, 
+                smtp_server: document.getElementById('setting-smtp-server').value,
+                smtp_email: document.getElementById('setting-smtp-email').value,
+                smtp_password: document.getElementById('setting-smtp-password').value
+            };
+            
+            try {
+                const res = await fetch(`${API_BASE}/superadmin/settings`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(payload) });
+                if(res.ok) { btn.innerText = "Saved!"; setTimeout(() => btn.innerText = "Save Configuration", 2000); }
+            } catch (err) { alert("Failed to save."); btn.innerText = "Save Configuration"; }
+        }
+
+        async function openClientDetails(clientId) {
+            const token = localStorage.getItem("sa_token");
+            try {
+                const res = await fetch(`${API_BASE}/superadmin/clients/${clientId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const data = await res.json();
+                
+                if (res.ok && data.status === "success") {
+                    const c = data.client;
+                    document.getElementById('cd-name').innerText = c.company_name;
+                    document.getElementById('cd-apikey').innerText = c.api_key;
+                    
+                    // const statusBadge = document.getElementById('cd-status');
+                    // statusBadge.innerText = c.is_active ? "Active" : "Suspended";
+                    // statusBadge.className = c.is_active ? "text-xs px-2 py-1 rounded-full bg-emerald-900/50 text-emerald-400 border border-emerald-800" : "text-xs px-2 py-1 rounded-full bg-red-900/50 text-red-400 border border-red-800";
+
+                    const statusBadge = document.getElementById('cd-status');
+                    statusBadge.innerText = c.is_active ? "Active" : "Suspended";
+                    statusBadge.className = c.is_active 
+                        ? "text-xs px-2 py-1 rounded-full bg-emerald-900/50 text-emerald-400 border border-emerald-800" 
+                        : "text-xs px-2 py-1 rounded-full bg-red-900/50 text-red-400 border border-red-800";
+
+                    document.getElementById('cd-email').innerText = c.email || 'N/A';
+                    document.getElementById('cd-phone').innerText = c.phone || 'N/A';
+                    document.getElementById('cd-website').innerText = c.website || 'N/A';
+                    document.getElementById('cd-industry').innerText = c.industry || 'N/A';
+                    document.getElementById('cd-plan').innerText = c.subscription_plan;
+                    document.getElementById('cd-joined').innerText = new Date(c.created_at).toLocaleDateString();
+
+                    document.getElementById('cd-bot-name').innerText = c.bot_name || 'Not Configured';
+                    document.getElementById('cd-bot-email').innerText = c.support_email || 'Not Configured';
+                    document.getElementById('cd-bot-phone').innerText = c.support_phone || 'Not Configured';
+                    document.getElementById('cd-rules').innerText = c.custom_rules || 'No custom rules set.';
+
+                    document.getElementById('cd-stat-agents').innerText = c.stats?.total_agents || 0;
+                    document.getElementById('cd-stat-sessions').innerText = c.stats?.total_sessions || 0;
+
+                    document.getElementById('client-detail-modal').classList.remove('hidden');
+                } else { alert("Failed to load client details."); }
+            } catch (err) { console.error(err); alert("Server error while fetching client details."); }
+        }
+    </script>
+</body>
+</html>

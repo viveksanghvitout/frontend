@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Widget Test Environment</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-gray-50 flex flex-col min-h-screen font-sans">
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm py-4 border-b border-gray-100">
+        <div class="max-w-6xl mx-auto px-4 flex justify-between items-center">
+            <div class="text-xl font-black text-indigo-600 tracking-tight">AcmeCorp<span
+                    class="text-gray-400 font-normal">.io</span></div>
+            <div class="space-x-8 text-gray-500 font-medium hidden md:block text-sm">
+                <a href="#" class="hover:text-indigo-600 transition-colors">Products</a>
+                <a href="#" class="hover:text-indigo-600 transition-colors">Solutions</a>
+                <a href="#" class="hover:text-indigo-600 transition-colors">Pricing</a>
+                <a href="#" class="hover:text-indigo-600 transition-colors">Contact Sales</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <main class="flex-1 max-w-6xl mx-auto px-4 py-24 w-full text-center">
+        <div
+            class="inline-block bg-indigo-50 text-indigo-600 font-bold px-4 py-1.5 rounded-full text-sm mb-6 border border-indigo-100">
+            🤖 Widget Testing Mode
+        </div>
+        <h1 class="text-5xl font-extrabold text-gray-900 mb-6 tracking-tight">Welcome to your <span
+                class="text-indigo-600">Simulated Site</span></h1>
+        <p class="text-xl text-gray-500 mb-12 max-w-2xl mx-auto leading-relaxed">This page is designed specifically to
+            test out your newly configured AI chatbot widget in a live, realistic environment.</p>
+
+        <div
+            class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 text-left max-w-2xl mx-auto hover:shadow-md transition-shadow">
+            <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Testing Checklist
+            </h3>
+            <ul class="space-y-4">
+                <li class="flex items-start gap-3">
+                    <div
+                        class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-sm flex-shrink-0 mt-0.5">
+                        1</div>
+                    <p class="text-gray-600">Look for the floating chat button in the bottom corner of your screen.</p>
+                </li>
+                <li class="flex items-start gap-3">
+                    <div
+                        class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-sm flex-shrink-0 mt-0.5">
+                        2</div>
+                    <p class="text-gray-600">Click the button to open the chat interface and verify the branding colors.
+                    </p>
+                </li>
+                <li class="flex items-start gap-3">
+                    <div
+                        class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-sm flex-shrink-0 mt-0.5">
+                        3</div>
+                    <p class="text-gray-600">Send a test message to ensure the widget connects to your backend properly.
+                    </p>
+                </li>
+            </ul>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 py-8 text-center text-gray-400 text-sm">
+        <p>&copy; 2026 AcmeCorp. Simulated environment for SaaS widget testing.</p>
+    </footer>
+
+    <!-- Injecting the Widget Script -->
+    <!-- Served locally via Vite from the public/ directory -->
+    <script type="module" src="http://localhost:5173/widget.js" data-api-key="YOUR_API_KEY_HERE">
+    </script>
+</body>
+
+</html>
